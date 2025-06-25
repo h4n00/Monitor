@@ -2,104 +2,152 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Clima en tiempo real</title>
+  <title>Monitoreo Ambiental ESP32 - DHT11</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #eef2f3;
+      background: #f0f3f5;
       text-align: center;
-      padding: 30px;
       margin: 0;
+      padding: 20px;
     }
 
     h1 {
       color: #333;
-      margin-top: 20px;
+      margin-bottom: 20px;
     }
 
-    .tarjeta {
+    .clima-actual {
       background: #fff;
-      border-radius: 15px;
-      padding: 25px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 20px;
       max-width: 500px;
-      margin: 40px auto;
+      margin: auto;
+      margin-bottom: 40px;
     }
 
     .icono {
-      font-size: 80px;
+      font-size: 64px;
       margin-bottom: 10px;
     }
 
     .valor {
-      font-size: 22px;
-      margin: 10px 0;
-      color: #444;
+      font-size: 20px;
+      margin-bottom: 5px;
+      color: #333;
+    }
+
+    .contenedor {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    .grafico {
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      max-width: 460px;
+    }
+
+    iframe {
+      width: 100%;
+      height: 260px;
+      border: none;
+      border-radius: 6px;
+    }
+
+    .leyenda {
+      font-size: 15px;
+      margin-top: 10px;
+      color: #555;
     }
 
     footer {
       margin-top: 40px;
-      font-size: 15px;
+      font-size: 14px;
       color: #444;
-      line-height: 1.6;
-      text-align: center;
-      background: #f8f9fa;
+      background: #eef1f4;
       padding: 20px;
-      border-top: 1px solid #ddd;
+      line-height: 1.6;
+      border-top: 1px solid #ccc;
+    }
+
+    @media (max-width: 900px) {
+      .grafico {
+        width: 100%;
+        max-width: 420px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <h1>Clima Actual</h1>
-  <div class="tarjeta">
-    <div class="icono" id="icono">🌡️</div>
-    <div class="valor" id="temp">Temperatura: -- °C</div>
-    <div class="valor" id="hum">Humedad: -- %</div>
+  <h1>Monitoreo Ambiental en Tiempo Real</h1>
+
+  <div class="clima-actual">
+    <div id="iconoClima" class="icono">☁️</div>
+    <div class="valor" id="tempValor">Temperatura: -- °C</div>
+    <div class="valor" id="humValor">Humedad: -- %</div>
   </div>
 
-  <script>
-    const channelID = "2987141";
-    const tempField = 1;
-    const humField = 2;
-
-    Promise.all([
-      fetch(`https://api.thingspeak.com/channels/${channelID}/fields/${tempField}/last.json`).then(res => res.json()),
-      fetch(`https://api.thingspeak.com/channels/${channelID}/fields/${humField}/last.json`).then(res => res.json())
-    ])
-    .then(([tempData, humData]) => {
-      const temperatura = parseFloat(tempData.field1);
-      const humedad = parseFloat(humData.field2);
-      const icono = document.getElementById("icono");
-
-      document.getElementById("temp").textContent = `Temperatura: ${temperatura} °C`;
-      document.getElementById("hum").textContent = `Humedad: ${humedad} %`;
-
-      if (temperatura >= 30 && humedad <= 50) icono.textContent = "🔥";        // Calor seco
-      else if (temperatura >= 30 && humedad > 50) icono.textContent = "🌤️";   // Calor húmedo
-      else if (temperatura >= 25) icono.textContent = "☀️";                   // Soleado
-      else if (temperatura >= 18) icono.textContent = "⛅";                    // Nublado
-      else if (temperatura >= 14) icono.textContent = "🌧️";                   // Lluvia
-      else if (temperatura >= 10) icono.textContent = "🌬️";                   // Viento fresco
-      else icono.textContent = "❄️";                                          // Frío
-    })
-    .catch(error => {
-      document.getElementById("temp").textContent = "Error al cargar temperatura";
-      document.getElementById("hum").textContent = "Error al cargar humedad";
-      document.getElementById("icono").textContent = "❌";
-      console.error(error);
-    });
-  </script>
+  <div class="contenedor">
+    <div class="grafico">
+      <iframe src="https://thingspeak.com/channels/2987141/charts/1?bgcolor=%23ffffff&color=%23f39c12&dynamic=true&type=spline&title=temperatura&yaxis=Temperatura&xaxis=Date&results=60"></iframe>
+      <div class="leyenda">Temperatura ambiente registrada en los últimos minutos (°C).</div>
+    </div>
+    <div class="grafico">
+      <iframe src="https://thingspeak.com/channels/2987141/charts/2?bgcolor=%23ffffff&color=%23007acc&dynamic=true&type=spline&title=humedad&yaxis=%25&xaxis=hora&results=60"></iframe>
+      <div class="leyenda">Humedad relativa del entorno en tiempo real (%).</div>
+    </div>
+  </div>
 
   <footer>
     Universidad Regional de Guatemala<br>
     Séptimo semestre de Administración de Sistemas Informáticos<br>
-    Autores: Herbert y Michael Luna
+    Autores: Herbert y Michel Luna
   </footer>
+
+  <script>
+    // Reemplaza por tu Channel ID y campo de temperatura/humedad
+    const CHANNEL_ID = "2987141";
+
+    fetch(`https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?results=1`)
+      .then(res => res.json())
+      .then(data => {
+        const t = parseFloat(data.feeds[0].field1);
+        const h = parseFloat(data.feeds[0].field2);
+        const icono = document.getElementById("iconoClima");
+
+        document.getElementById("tempValor").textContent = `Temperatura: ${t.toFixed(1)} °C`;
+        document.getElementById("humValor").textContent = `Humedad: ${h.toFixed(0)} %`;
+
+        if (t >= 30) {
+          icono.textContent = "🔥"; // Muy caliente
+        } else if (t >= 26 && h < 60) {
+          icono.textContent = "☀️"; // Soleado
+        } else if (t >= 24 && h >= 60) {
+          icono.textContent = "🌦️"; // Nublado con humedad
+        } else if (t < 24 && h >= 70) {
+          icono.textContent = "🌧️"; // Lluvia o clima húmedo
+        } else if (t < 20) {
+          icono.textContent = "❄️"; // Frío
+        } else if (h > 80) {
+          icono.textContent = "🌬️"; // Viento fuerte o tormenta
+        } else {
+          icono.textContent = "🌤️"; // Parcialmente soleado
+        }
+      })
+      .catch(err => {
+        console.error("Error al obtener datos de ThingSpeak:", err);
+      });
+  </script>
 
 </body>
 </html>
-
-
 
    
