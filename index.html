@@ -34,6 +34,12 @@
       margin: 10px 0;
       color: #444;
     }
+
+    footer {
+      margin-top: 40px;
+      font-size: 14px;
+      color: #666;
+    }
   </style>
 </head>
 <body>
@@ -67,7 +73,7 @@
       else if (temperatura >= 25) icono.textContent = "☀️";                   // Soleado
       else if (temperatura >= 18) icono.textContent = "⛅";                    // Nublado
       else if (temperatura >= 14) icono.textContent = "🌧️";                   // Lluvia
-      else if (temperatura >= 10) icono.textContent = "🌬️";                   // Vientos frescos
+      else if (temperatura >= 10) icono.textContent = "🌬️";                   // Viento fresco
       else icono.textContent = "❄️";                                          // Frío
     })
     .catch(error => {
@@ -78,5 +84,14 @@
     });
   </script>
 
+  <footer>
+    <p>Septimo semestre de Administracion de Sistemas Informaticos</p>
+    <p>Universidad Regional de Guatemala</p>
+    <p>Autores: Herbert y Michel Luna</p>
+  </footer>
+
 </body>
 </html>
+
+
+   
